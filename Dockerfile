@@ -1,13 +1,18 @@
-FROM python:3.11-slim
+FROM python:3.9-slim
 
 WORKDIR /app
 
-COPY requirements.txt .
-
 RUN python -m venv /opt/venv
-RUN . /opt/venv/bin/activate && pip install --upgrade pip setuptools wheel
-RUN . /opt/venv/bin/activate && pip install -r requirements.txt
 
+# Оновлюємо pip, setuptools, wheel
+RUN /opt/venv/bin/pip install --upgrade pip setuptools wheel
+
+# Копіюємо всі файли проекту
 COPY . .
 
-CMD ["/opt/venv/bin/python", "translate_bot.py"]
+# Встановлюємо залежності
+RUN /opt/venv/bin/pip install -r requirements.txt
+
+ENV PATH="/opt/venv/bin:$PATH"
+
+CMD ["python", "translate_bot.py"]
