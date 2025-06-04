@@ -12,15 +12,15 @@ def translate_message(update, context):
     chat_id = update.message.chat_id
 
     try:
-        # Переклад на 4 мови
-       translations = {
-    'English': translator.translate(message_text, dest='en').text,
-    'Russian': translator.translate(message_text, dest='ru').text,
-    'French': translator.translate(message_text, dest='fr').text,
-    'Italian': translator.translate(message_text, dest='it').text,
-    'Japanese': translator.translate(message_text, dest='ja').text
-}
-
+try:
+    # Переклад на 4 мови
+    translations = {
+        'English': translator.translate(message_text, dest='en').text,
+        'Russian': translator.translate(message_text, dest='ru').text,
+        'French': translator.translate(message_text, dest='fr').text,
+        'Italian': translator.translate(message_text, dest='it').text,
+        'Japanese': translator.translate(message_text, dest='ja').text
+    }
         # Формуємо одне повідомлення з усіма перекладами
         reply_text = "🫡\n\n"
         for lang, text in translations.items():
