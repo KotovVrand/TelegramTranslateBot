@@ -1,26 +1,23 @@
 from telegram.ext import Updater, MessageHandler, Filters
-from googletrans import Translator
+from deep_translator import GoogleTranslator
 
 # Токен у лапках
 TOKEN = '7911165186:AAEHFfxvlitKeGMXQSxC1qQphqejN7lLFZA'
-
-# Ініціалізація перекладача
-translator = Translator()
 
 def translate_message(update, context):
     message_text = update.message.text
     chat_id = update.message.chat_id
 
     try:
-try:
-    # Переклад на 4 мови
-    translations = {
-        'English': translator.translate(message_text, dest='en').text,
-        'Russian': translator.translate(message_text, dest='ru').text,
-        'French': translator.translate(message_text, dest='fr').text,
-        'Italian': translator.translate(message_text, dest='it').text,
-        'Japanese': translator.translate(message_text, dest='ja').text
-    }
+        # Переклад на 4 мови
+        translations = {
+            'English': GoogleTranslator(source='auto', target='en').translate(message_text),
+            'Russian': GoogleTranslator(source='auto', target='ru').translate(message_text),
+            'French': GoogleTranslator(source='auto', target='fr').translate(message_text),
+            'Italian': GoogleTranslator(source='auto', target='it').translate(message_text),
+            'Japanese': GoogleTranslator(source='auto', target='ja').translate(message_text)
+        }
+
         # Формуємо одне повідомлення з усіма перекладами
         reply_text = "🫡\n\n"
         for lang, text in translations.items():
@@ -28,6 +25,7 @@ try:
 
         # Відправляємо одне повідомлення
         update.message.reply_text(reply_text)
+
     except Exception as e:
         update.message.reply_text(f"Помилка перекладу: {str(e)}")
 
