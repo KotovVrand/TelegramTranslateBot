@@ -29,4 +29,4 @@ RUN /opt/venv/bin/pip install -r requirements.txt
 ENV PATH="/opt/venv/bin:$PATH"
 
 # Вказуємо команду запуску бота (заміни app.py на твій файл)
-CMD ["python", "app.py"]
+CMD ["python", "translate_bot.py"]
