@@ -1,14 +1,12 @@
-from telegram.ext import ApplicationBuilder, MessageHandler, ContextTypes
-from telegram.ext import filters
+from telegram.ext import ApplicationBuilder, MessageHandler, filters
 from telegram import Update
+from telegram.ext import ContextTypes
 from deep_translator import GoogleTranslator
 
-# Токен у лапках
 TOKEN = '7911165186:AAEHFfxvlitKeGMXQSxC1qQphqejN7lLFZA'
 
 async def translate_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message_text = update.message.text
-
     try:
         translations = {
             'English': GoogleTranslator(source='auto', target='en').translate(message_text),
