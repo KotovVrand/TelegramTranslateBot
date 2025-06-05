@@ -1,37 +1,53 @@
-import os
+import aiohttp
 from telegram.ext import ApplicationBuilder, MessageHandler, filters
 from telegram import Update
 from telegram.ext import ContextTypes
-from google.cloud import translate_v2 as translate
 
-# 🔐 Токени (не публікуй у відкритому коді)
-TOKEN = '7911165186:AAEHFfxvlitKeGMXQSxC1qQphqejN7lLFZA'
-GOOGLE_API_KEY = 'AIzaSyA4UmAF__bH5kPpsfreRzYp8DuEmVpMHLs'
+GOOGLE_API_KEY = "AIzaSyA4UmAF__bH5kPpsfreRzYp8DuEmVpMHLs"
+TELEGRAM_TOKEN = "7911165186:AAEHFfxvlitKeGMXQSxC1qQphqejN7lLFZA"
 
-# Ініціалізація перекладача
-translator = translate.Client(api_key=GOOGLE_API_KEY)
+async def translate_text(text: str, target_lang: str) -> str:
+    url = "https://translation.googleapis.com/language/translate/v2"
+    params = {
+        "q": text,
+        "target": target_lang,
+        "key": GOOGLE_API_KEY,
+        "format": "text"
+    }
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, params=params) as resp:
+            if resp.status != 200:
+                return f"Помилка API: {resp.status}"
+            data = await resp.json()
+            try:
+                return data["data"]["translations"][0]["translatedText"]
+            except Exception as e:
+                return f"Помилка парсингу: {e}"
 
-# Основна функція перекладу
 async def translate_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message_text = update.message.text
     try:
-        targets = ['en', 'ru', 'fr', 'it', 'ja']
-        reply_text = "🫡 Переклад:\n\n"
+        translations = {
+            'English': await translate_text(message_text, "en"),
+            'Russian': await translate_text(message_text, "ru"),
+            'French': await translate_text(message_text, "fr"),
+            'Italian': await translate_text(message_text, "it"),
+            'Japanese': await translate_text(message_text, "ja"),
+        }
 
-        for lang in targets:
-            result = translator.translate(message_text, target_language=lang)
-            reply_text += f"{lang.upper()}: {result['translatedText']}\n"
+        reply_text = "🫡 Переклади:\n\n"
+        for lang, text in translations.items():
+            reply_text += f"{lang}: {text}\n"
 
         await update.message.reply_text(reply_text)
 
     except Exception as e:
-        await update.message.reply_text(f"❌ Error: {str(e)}")
+        await update.message.reply_text(f"Помилка перекладу: {str(e)}")
 
-# Запуск бота
 def main():
-    app = ApplicationBuilder().token(TOKEN).build()
+    app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, translate_message))
-    print("✅ Бот запущено.")
+    print("Бот запущено! Натисни Ctrl+C для зупинки.")
     app.run_polling()
 
 if __name__ == '__main__':
