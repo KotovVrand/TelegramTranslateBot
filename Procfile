@@ -1,1 +1,1 @@
-web: python translate_bot.py
+worker: python translate_bot.py
