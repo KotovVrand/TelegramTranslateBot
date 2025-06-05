@@ -3,7 +3,6 @@ from telegram import Update
 from deep_translator import LibreTranslator
 import logging
 
-# Заміни токен на свій
 TOKEN = '7911165186:AAEHFfxvlitKeGMXQSxC1qQphqejN7lLFZA'
 
 logging.basicConfig(
@@ -14,12 +13,13 @@ logging.basicConfig(
 async def translate_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message_text = update.message.text
     try:
+        # Вказуємо endpoint без авторизації
         translations = {
-            'English': LibreTranslator(source='auto', target='en').translate(message_text),
-            'Russian': LibreTranslator(source='auto', target='ru').translate(message_text),
-            'French': LibreTranslator(source='auto', target='fr').translate(message_text),
-            'Italian': LibreTranslator(source='auto', target='it').translate(message_text),
-            'Japanese': LibreTranslator(source='auto', target='ja').translate(message_text)
+            'English': LibreTranslator(source='auto', target='en', api_url='https://libretranslate.de').translate(message_text),
+            'Russian': LibreTranslator(source='auto', target='ru', api_url='https://libretranslate.de').translate(message_text),
+            'French': LibreTranslator(source='auto', target='fr', api_url='https://libretranslate.de').translate(message_text),
+            'Italian': LibreTranslator(source='auto', target='it', api_url='https://libretranslate.de').translate(message_text),
+            'Japanese': LibreTranslator(source='auto', target='ja', api_url='https://libretranslate.de').translate(message_text),
         }
 
         reply_text = "🫡\n\n"
