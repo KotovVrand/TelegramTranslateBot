@@ -1,25 +1,36 @@
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 from telegram import Update
-from deep_translator import LibreTranslator
+import requests
 import logging
 
-TOKEN = '7911165186:AAEHFfxvlitKeGMXQSxC1qQphqejN7lLFZA'
+TOKEN = 'твій_токен'
+API_URL = 'https://libretranslate.de/translate'  # Публічний endpoint
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
 
+# Функція перекладу
+def translate(text, target_lang):
+    response = requests.post(API_URL, data={
+        'q': text,
+        'source': 'auto',
+        'target': target_lang,
+        'format': 'text'
+    })
+    return response.json()['translatedText']
+
+# Основна функція бота
 async def translate_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message_text = update.message.text
     try:
-        # Вказуємо endpoint без авторизації
         translations = {
-            'English': LibreTranslator(source='auto', target='en', api_url='https://libretranslate.de').translate(message_text),
-            'Russian': LibreTranslator(source='auto', target='ru', api_url='https://libretranslate.de').translate(message_text),
-            'French': LibreTranslator(source='auto', target='fr', api_url='https://libretranslate.de').translate(message_text),
-            'Italian': LibreTranslator(source='auto', target='it', api_url='https://libretranslate.de').translate(message_text),
-            'Japanese': LibreTranslator(source='auto', target='ja', api_url='https://libretranslate.de').translate(message_text),
+            'English': translate(message_text, 'en'),
+            'Russian': translate(message_text, 'ru'),
+            'French': translate(message_text, 'fr'),
+            'Italian': translate(message_text, 'it'),
+            'Japanese': translate(message_text, 'ja'),
         }
 
         reply_text = "🫡\n\n"
