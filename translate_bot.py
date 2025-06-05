@@ -1,52 +1,53 @@
-from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
-from telegram import Update
 import requests
-import logging
+from telegram.ext import ApplicationBuilder, MessageHandler, filters
+from telegram import Update
+from telegram.ext import ContextTypes
 
+# Встав сюди свій токен
 TOKEN = '7911165186:AAEHFfxvlitKeGMXQSxC1qQphqejN7lLFZA'
-API_URL = 'https://libretranslate.de/translate'  # Публічний endpoint
 
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
-)
+# Функція перекладу через LibreTranslate
+def translate_text(text, target_lang):
+    url = "https://libretranslate.de/translate"
+    payload = {
+        "q": text,
+        "source": "auto",
+        "target": target_lang,
+        "format": "text"
+    }
+    headers = {
+        "Content-Type": "application/json"
+    }
 
-# Функція перекладу
-def translate(text, target_lang):
-    response = requests.post(API_URL, data={
-        'q': text,
-        'source': 'auto',
-        'target': target_lang,
-        'format': 'text'
-    })
-    return response.json()['translatedText']
+    try:
+        response = requests.post(url, json=payload, headers=headers, timeout=10)
+        response.raise_for_status()
+        return response.json()["translatedText"]
+    except Exception as e:
+        return f"❌ Error: {str(e)}"
 
-# Основна функція бота
+# Обробка повідомлень
 async def translate_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message_text = update.message.text
-    try:
-        translations = {
-            'English': translate(message_text, 'en'),
-            'Russian': translate(message_text, 'ru'),
-            'French': translate(message_text, 'fr'),
-            'Italian': translate(message_text, 'it'),
-            'Japanese': translate(message_text, 'ja'),
-        }
+    translations = {
+        'English': translate_text(message_text, 'en'),
+        'Russian': translate_text(message_text, 'ru'),
+        'French': translate_text(message_text, 'fr'),
+        'Italian': translate_text(message_text, 'it'),
+        'Japanese': translate_text(message_text, 'ja')
+    }
 
-        reply_text = "🫡\n\n"
-        for lang, text in translations.items():
-            reply_text += f"{lang}: {text}\n"
+    reply_text = "🫡 Переклад:\n\n"
+    for lang, translated in translations.items():
+        reply_text += f"{lang}: {translated}\n"
 
-        await update.message.reply_text(reply_text)
+    await update.message.reply_text(reply_text)
 
-    except Exception as e:
-        logging.error(f"Translation error: {e}")
-        await update.message.reply_text(f"Помилка перекладу: {str(e)}")
-
+# Запуск бота
 def main():
     app = ApplicationBuilder().token(TOKEN).build()
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, translate_message))
-    logging.info("Bot is running...")
+    print("Бот запущено!")
     app.run_polling()
 
 if __name__ == '__main__':
