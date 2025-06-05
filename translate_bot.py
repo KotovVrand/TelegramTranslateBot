@@ -3,7 +3,7 @@ from telegram import Update
 import requests
 import logging
 
-TOKEN = 'твій_токен'
+TOKEN = '7911165186:AAEHFfxvlitKeGMXQSxC1qQphqejN7lLFZA'
 API_URL = 'https://libretranslate.de/translate'  # Публічний endpoint
 
 logging.basicConfig(
