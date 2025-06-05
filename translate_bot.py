@@ -1,9 +1,16 @@
-from telegram.ext import ApplicationBuilder, MessageHandler, filters
+from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 from telegram import Update
-from telegram.ext import ContextTypes
 from deep_translator import GoogleTranslator
+import logging
 
+# Заміни на свій токен або передай як змінну середовища
 TOKEN = '7911165186:AAEHFfxvlitKeGMXQSxC1qQphqejN7lLFZA'
+
+# Логи для Railway
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
 
 async def translate_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message_text = update.message.text
@@ -23,12 +30,14 @@ async def translate_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(reply_text)
 
     except Exception as e:
+        logging.error(f"Translation error: {e}")
         await update.message.reply_text(f"Помилка перекладу: {str(e)}")
 
 def main():
     app = ApplicationBuilder().token(TOKEN).build()
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, translate_message))
-    print("Бот запущено! Натисни Ctrl+C для зупинки.")
+
+    logging.info("Bot is running...")
     app.run_polling()
 
 if __name__ == '__main__':
