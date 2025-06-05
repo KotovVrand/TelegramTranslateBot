@@ -1,54 +1,62 @@
-import aiohttp
-from telegram.ext import ApplicationBuilder, MessageHandler, filters
-from telegram import Update
-from telegram.ext import ContextTypes
+from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
+import requests
 
-GOOGLE_API_KEY = "AIzaSyA4UmAF__bH5kPpsfreRzYp8DuEmVpMHLs"
-TELEGRAM_TOKEN = "7911165186:AAEHFfxvlitKeGMXQSxC1qQphqejN7lLFZA"
+# Токен бота (заміни на свій токен від @BotFather)
+TOKEN = '7911165186:AAEHFfxvlitKeGMXQSxC1qQphqejN7lLFZA'
 
-async def translate_text(text: str, target_lang: str) -> str:
-    url = "https://translation.googleapis.com/language/translate/v2"
-    params = {
-        "q": text,
-        "target": target_lang,
-        "key": GOOGLE_API_KEY,
-        "format": "text"
-    }
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url, params=params) as resp:
-            if resp.status != 200:
-                return f"Помилка API: {resp.status}"
-            data = await resp.json()
-            try:
-                return data["data"]["translations"][0]["translatedText"]
-            except Exception as e:
-                return f"Помилка парсингу: {e}"
+# URL локального сервера LibreTranslate
+LIBRETRANSLATE_URL = 'http://localhost:5000/translate'
 
-async def translate_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def start(update, context):
+    update.message.reply_text("Привіт! Я бот для перекладу. Пиши повідомлення, і я перекладу його на 4 мови!")
+
+def help_command(update, context):
+    update.message.reply_text("Інструкція:\n- Пиши будь-яке повідомлення, і я перекладу його на англійську, російську, французьку та італійську.\n- Команди: /start, /help, /languages")
+
+def languages(update, context):
+    update.message.reply_text("Підтримувані мови: English, Russian, French, Italian")
+
+def translate_message(update, context):
     message_text = update.message.text
     try:
+        # Переклад на 4 мови через LibreTranslate
         translations = {
-            'English': await translate_text(message_text, "en"),
-            'Russian': await translate_text(message_text, "ru"),
-            'French': await translate_text(message_text, "fr"),
-            'Italian': await translate_text(message_text, "it"),
-            'Japanese': await translate_text(message_text, "ja"),
+            'English': requests.post(LIBRETRANSLATE_URL, json={
+                'q': message_text, 'source': 'auto', 'target': 'en'
+            }).json()['translatedText'],
+            'Russian': requests.post(LIBRETRANSLATE_URL, json={
+                'q': message_text, 'source': 'auto', 'target': 'ru'
+            }).json()['translatedText'],
+            'French': requests.post(LIBRETRANSLATE_URL, json={
+                'q': message_text, 'source': 'auto', 'target': 'fr'
+            }).json()['translatedText'],
+            'Italian': requests.post(LIBRETRANSLATE_URL, json={
+                'q': message_text, 'source': 'auto', 'target': 'it'
+            }).json()['translatedText']
         }
-
-        reply_text = "🫡 Переклади:\n\n"
+        # Формуємо одне повідомлення з перекладами
+        reply_text = "Переклади:\n\n"
         for lang, text in translations.items():
             reply_text += f"{lang}: {text}\n"
-
-        await update.message.reply_text(reply_text)
-
+        update.message.reply_text(reply_text)
     except Exception as e:
-        await update.message.reply_text(f"Помилка перекладу: {str(e)}")
+        update.message.reply_text(f"Помилка перекладу: {str(e)}")
 
 def main():
-    app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, translate_message))
+    # Ініціалізація бота
+    updater = Updater(TOKEN, use_context=True)
+    dp = updater.dispatcher
+
+    # Додаємо обробники команд
+    dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler("help", help_command))
+    dp.add_handler(CommandHandler("languages", languages))
+    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, translate_message))
+
+    # Запуск бота
+    updater.start_polling()
     print("Бот запущено! Натисни Ctrl+C для зупинки.")
-    app.run_polling()
+    updater.idle()
 
 if __name__ == '__main__':
     main()
