@@ -2,7 +2,7 @@ from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
 import requests
 
 TOKEN = '7911165186:AAEHFfxvlitKeGMXQSxC1qQphqejN7lLFZA'
-LIBRETRANSLATE_URL = 'https://libretranslate.com/translate'
+LIBRETRANSLATE_URL = 'https://libretranslate-production-63a6.up.railway.app/translate'
 
 def start(update, context):
     update.message.reply_text("Привіт! Я бот для перекладу. Пиши повідомлення, і я перекладу його на 4 мови!")
